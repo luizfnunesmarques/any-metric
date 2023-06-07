@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: any-metric-pod
+spec:
+  containers:
+    - name: any-metric-container
+      image: ghcr.io/luizfnunesmarques/any-metric:latest
+      command: ["any-metric"]
+      args:
+        - "--metric=gauge_metric:5s:1.0:gauge"
+        - "--metric=counter_metric:10s:5.0:counter"
+      ports:
+        - containerPort: 8080
