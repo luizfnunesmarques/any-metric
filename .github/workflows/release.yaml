@@ -1,0 +1,94 @@
+name: "release"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release-version:
+    name: "Create release binaries"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - uses: actions/checkout@v3
+
+      - name: Build binaries
+        run: |
+          touch checksums.txt
+
+          OS=linux GOARCH=amd64 go build -o any-metric_linux_amd64
+          echo $(sha256sum any-metric_linux_amd64) > checksums.txt
+
+          OS=linux GOARCH=arm64 go build -o any-metric_linux_arm64
+          echo $(sha256sum any-metric_linux_arm64) > checksums.txt
+
+          OS=linux GOARCH=386 go build -o any-metric_linux_386
+          echo $(sha256sum any-metric_linux_386) > checksums.txt
+
+          OS=darwin GOARCH=amd64 go build -o any-metric_darwin_arm64
+          echo $(sha256sum any-metric_darwin_arm64) > checksums.txt
+
+          OS=darwin GOARCH=arm64 go build -o any-metric_darwin_arm64
+          echo $(sha256sum any-metric_darwin_arm64) > checksums.txt
+
+          OS=darwin GOARCH=386 go build -o any-metric_darwin_386
+          echo $(sha256sum any-metric_darwin_386) > checksums.txt
+
+      - uses: "marvinpinto/action-automatic-releases@v1.2.1"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: ${{ github.ref_name}}
+          title: ${{ github.ref_name}}
+          files: |
+            any-metric_linux_amd64
+            any-metric_linux_arm64
+            any-metric_linux_386
+            any-metric_darwin_arm64
+            any-metric_darwin_386
+
+            checksums.txt
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Define tags
+        uses: docker/metadata-action@v3
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+          labels: |
+            org.opencontainers.image.source: ${{ github.event.repository.html_url }}
+            org.opencontainers.image.created: ${{ steps.docker_build.outputs.created }}
+            org.opencontainers.image.revision: ${{ github.sha }}
+          tags: |
+            type=ref,event=tag
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/arm,windows/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
