@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.18
+          go-version: 1.20
 
       - uses: actions/checkout@v3
 
@@ -27,9 +27,6 @@ jobs:
           OS=linux GOARCH=arm64 go build -o any-metric_linux_arm64
           echo $(sha256sum any-metric_linux_arm64) > checksums.txt
 
-          OS=linux GOARCH=386 go build -o any-metric_linux_386
-          echo $(sha256sum any-metric_linux_386) > checksums.txt
-
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -39,7 +36,6 @@ jobs:
           files: |
             any-metric_linux_amd64
             any-metric_linux_arm64
-            any-metric_linux_386
 
             checksums.txt
 

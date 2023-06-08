@@ -15,7 +15,6 @@ RUN go build -o /any-metric
 
 ## Runner
 FROM gcr.io/distroless/base-debian10
-dc
 WORKDIR /
 
 COPY --from=builder /any-metric /any-metric
