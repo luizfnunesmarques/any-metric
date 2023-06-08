@@ -30,15 +30,6 @@ jobs:
           OS=linux GOARCH=386 go build -o any-metric_linux_386
           echo $(sha256sum any-metric_linux_386) > checksums.txt
 
-          OS=darwin GOARCH=amd64 go build -o any-metric_darwin_arm64
-          echo $(sha256sum any-metric_darwin_arm64) > checksums.txt
-
-          OS=darwin GOARCH=arm64 go build -o any-metric_darwin_arm64
-          echo $(sha256sum any-metric_darwin_arm64) > checksums.txt
-
-          OS=darwin GOARCH=386 go build -o any-metric_darwin_386
-          echo $(sha256sum any-metric_darwin_386) > checksums.txt
-
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -49,8 +40,6 @@ jobs:
             any-metric_linux_amd64
             any-metric_linux_arm64
             any-metric_linux_386
-            any-metric_darwin_arm64
-            any-metric_darwin_386
 
             checksums.txt
 
@@ -89,6 +78,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64,darwin/amd64,darwin/arm64
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
