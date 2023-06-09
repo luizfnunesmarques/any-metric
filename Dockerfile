@@ -8,8 +8,7 @@ ENV GO111MODULE=on
 
 COPY . ./
 
-RUN ls
-RUN go mod tidy
+RUN go mod download
 
 RUN go build -o /any-metric
 
